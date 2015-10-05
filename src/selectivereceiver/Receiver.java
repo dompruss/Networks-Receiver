@@ -54,7 +54,7 @@ public class Receiver {
                 receiverSocket.receive(rcvPkt);
                 rcvData = rcvPkt.getData();
                 int a = rcvData[0];
-                if (drop[a] == false) {
+                if (drop[a] == false && windowTracker[a] != true) {
                     ackData[0] = (byte) a;
                     windowTracker[a] = true;
                     if (windowFirst == a) {
@@ -66,7 +66,10 @@ public class Receiver {
                     acknowledgementSocket.send(ackPkt);
                     i++;
 
-                } else {
+                } else if(windowTracker[a] == true){
+                    System.out.println("Receveied a second copy of "+a);
+                } 
+                else {
                     drop[a] = false;
                 }
             } while (i != sequence);
