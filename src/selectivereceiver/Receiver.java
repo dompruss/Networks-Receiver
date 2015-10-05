@@ -7,7 +7,8 @@ package selectivereceiver;
 
 /**
  *
- * @author Nik
+ * @author Dominik Pruss
+ * @author Nicolas Moore
  */
 import java.io.IOException;
 import java.net.*;
