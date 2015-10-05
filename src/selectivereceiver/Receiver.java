@@ -20,7 +20,7 @@ public class Receiver {
     static int size = 128;
 
     public static void main(String ARGS[]) {
-        Receiver rex = new Receiver();
+        Receiver rec = new Receiver();
     }
 
     public Receiver() {
@@ -57,9 +57,7 @@ public class Receiver {
                 if (drop[a] == false && windowTracker[a] != true) {
                     ackData[0] = (byte) a;
                     windowTracker[a] = true;
-                    if (windowFirst == a) {
-                        windowFirst++;
-                    }
+                    
                     System.out.println("Packet " + a + " is received, send Ack" + a + ", window" + windowMaker(windowFirst, windowTracker));
 
                     ackPkt = new DatagramPacket(ackData, ackData.length, IPAddress, 9878);
@@ -72,6 +70,10 @@ public class Receiver {
                 else {
                     drop[a] = false;
                 }
+                while(windowTracker[windowFirst] == true && windowFirst != sequence-1){
+                        windowFirst++;
+                    
+                }
             } while (i != sequence);
 
         } catch (IOException ex) {
@@ -83,7 +85,7 @@ public class Receiver {
         String message = "[";
         for (int i = 0; i < window; i++) {
             
-            if (windowfirst + i - 1 < windowTracker.length) {
+            if (windowfirst + i < windowTracker.length) {
                 if (windowTracker[windowfirst + i]) {
                     message = message + "" + (windowfirst + i) + "#";
                 } else {
