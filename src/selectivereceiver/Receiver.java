@@ -41,7 +41,7 @@ public class Receiver {
             window = rcvData[1];
             boolean drop[] = new boolean[sequence];
             drop = setDrop(rcvData, drop);
-            ackPkt = new DatagramPacket(rcvData, rcvData.length, IPAddress, 9879);
+            ackPkt = new DatagramPacket(rcvData, rcvData.length, IPAddress, 9878);
             acknowledgementSocket.send(ackPkt);
             int i = 0; // this value will track received packets
             boolean[] windowTracker = new boolean[sequence];
