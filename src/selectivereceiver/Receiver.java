@@ -16,45 +16,47 @@ import java.util.logging.Logger;
 
 public class Receiver {
 
-    int window;
-    static int size = 128;
+    int window;                     // Initialize window base
+    static int size = 128;          // Size for incoming data
 
+    // Main method
     public static void main(String ARGS[]) {
         Receiver rec = new Receiver();
     }
-
+    
+    // Constructor
     public Receiver() {
         try {
 
-            DatagramSocket receiverSocket = new DatagramSocket(9876);
-            DatagramSocket acknowledgementSocket = new DatagramSocket(9879);
-            byte[] rcvData = new byte[size];
-            byte[] ackData = new byte[size];
-            DatagramPacket rcvPkt = new DatagramPacket(rcvData, rcvData.length);
-            receiverSocket.receive(rcvPkt); // should grab all the packet info and everything
+            DatagramSocket receiverSocket = new DatagramSocket(9876);               // Initialize receiving socket
+            DatagramSocket acknowledgementSocket = new DatagramSocket(9879);        // Initialize ack socket
+            byte[] rcvData = new byte[size];                                        // Initialize array for data
+            byte[] ackData = new byte[size];                                        // Initialize array for acks
+            DatagramPacket rcvPkt = new DatagramPacket(rcvData, rcvData.length);    // Initialize Receive packet
+            receiverSocket.receive(rcvPkt);                                         // should grab all the packet info and everything
             System.out.println("Received packet");
-            InetAddress IPAddress = rcvPkt.getAddress();
+            InetAddress IPAddress = rcvPkt.getAddress();                            // Get IP and port
             int port = receiverSocket.getPort();
-            DatagramPacket ackPkt;
-            rcvData = rcvPkt.getData();
-            int sequence = rcvData[0];
-            window = rcvData[1];
-            boolean drop[] = new boolean[sequence];
+            DatagramPacket ackPkt;                                                  // Set up ack packet
+            rcvData = rcvPkt.getData();                                             // Receive data
+            int sequence = rcvData[0];                                              // Get sequence num
+            window = rcvData[1];                                                    // Get window base
+            boolean drop[] = new boolean[sequence];                                 // Find which packets are dropped
             drop = setDrop(rcvData, drop);
-            ackPkt = new DatagramPacket(rcvData, rcvData.length, IPAddress, 9879);
-            acknowledgementSocket.send(ackPkt);
-            int i = 0; // this value will track received packets
-            boolean[] windowTracker = new boolean[sequence];
+            ackPkt = new DatagramPacket(rcvData, rcvData.length, IPAddress, 9879);  // Set up ack packet
+            acknowledgementSocket.send(ackPkt);                                     // Send acks
+            int i = 0;                                                              // this value will track received packets
+            boolean[] windowTracker = new boolean[sequence];                        // Track packets
             for (int j = 0; j < sequence; j++) {
                 windowTracker[j] = false;
             }
 
-            int windowFirst = 0;
+            int windowFirst = 0;                                                    // Window base
             do {
-                receiverSocket.receive(rcvPkt);
-                rcvData = rcvPkt.getData();
-                int a = rcvData[0];
-                if (drop[a] == false && windowTracker[a] != true) {
+                receiverSocket.receive(rcvPkt);                                     // Receive packet     
+                rcvData = rcvPkt.getData();                                         // Get data
+                int a = rcvData[0];                                                 // Get sequence num
+                if (drop[a] == false && windowTracker[a] != true) {                 // If not dropped print message and send ack then increment i
                     ackData[0] = (byte) a;
                     windowTracker[a] = true;
                     
@@ -64,7 +66,7 @@ public class Receiver {
                     acknowledgementSocket.send(ackPkt);
                     i++;
 
-                } else if(windowTracker[a] == true){
+                } else if(windowTracker[a] == true){                                // If packet already received print message
                     System.out.println("Receveied a second copy of "+a);
                 } 
                 else {
@@ -77,10 +79,11 @@ public class Receiver {
             } while (i != sequence);
 
         } catch (IOException ex) {
-            Logger.getLogger(Receiver.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Receiver.class.getName()).log(Level.SEVERE, null, ex); // Catch IOExceptions
         }
     }
 
+    // Method to print window on receiver side
     public String windowMaker(int windowfirst, boolean[] windowTracker) {
         String message = "[";
         for (int i = 0; i < window; i++) {
@@ -105,7 +108,8 @@ public class Receiver {
             return message;
         
     }
-
+    
+    // Method to see which packets are being dropped
     public boolean[] setDrop(byte[] in_byte, boolean[] in_bool) {
 
         for (int i = 2; i < size; i++) {
@@ -116,5 +120,4 @@ public class Receiver {
         }
         return in_bool;
     }
-    //public void 
 }
